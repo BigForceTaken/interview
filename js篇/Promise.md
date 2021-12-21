@@ -11,7 +11,7 @@ Promise的出现解决了两个问题：
 * 回调地狱问题
 * 支持多个并发请求
 
-### Promise对象的方法 
+### Promise对象的常用方法 
 
 Promise 是一个对象，该对象上挂了很多方法，但是Promise中的精髓是状态管理，通过状态的改变来执行回调方法，并且链式调用传递参数。
 
@@ -19,75 +19,85 @@ Promise 是一个对象，该对象上挂了很多方法，但是Promise中的�
 
    该方法提供了并行执行异步操作的能力，并且在所有异步操作执行完后才执行回调。看下面的例子：
 
-   > let p1 = new Promise(function(resolve, reject){}) 
-   >
-   > let p2 = new Promise(function(resolve, reject){}) 
-   >
-   > let p3 = new Promise(function(resolve, reject){}) 
-   >
-   > Promise.all([p1,p2, p3]).then(funciton(){  
-   >
-   > ​	// 三个都成功则成功   
-   >
-   > }, function(){  
-   >
-   > ​	// 只要有失败，则失败 
-   >
-   >  })
+   ```
+   let p1 = new Promise(function(resolve, reject){}) 
+   
+   let p2 = new Promise(function(resolve, reject){}) 
+   
+   let p3 = new Promise(function(resolve, reject){}) 
+   
+   Promise.all([p1,p2, p3]).then(funciton(){  
+   
+   ​	// 三个都成功则成功   
+   
+   }, function(){  
+   
+   ​	// 只要有失败，则失败 
+   
+    })
+   ```
+
+   
 
 2. race
 
    该方法和all方法一样，接收一个Promise实例的数组作为参数，但是执行then的时机不同，实例中谁先执行完毕(fulfiled状态)，就以谁的返回参数来执行then方法。看下面的例子：
 
-   >
-   >
-   >let p1 = new Promise((*resolve*,*reject*) => {
-   >
-   >  setTimeout(() => {
-   >
-   >​    resolve('我是第一个执行完成的')
-   >
-   >  },3000)
-   >
-   >});
-   >
-   >let p2 = new Promise((*resolve*,*reject*) => {
-   >
-   >  setTimeout(() => {
-   >
-   >​    resolve('我是第二个执行完成的')
-   >
-   >  },5000)
-   >
-   >});
-   >
-   >Promise.race([p1,p2])
-   >
-   >  .then(*res* => {
-   >
-   >​    console.log(*res*)
-   >
-   >})
+   ```
+   let p1 = new Promise((*resolve*,*reject*) => {
+   
+     setTimeout(() => {
+   
+   ​    resolve('我是第一个执行完成的')
+   
+     },3000)
+   
+   });
+   
+   let p2 = new Promise((*resolve*,*reject*) => {
+   
+     setTimeout(() => {
+   
+   ​    resolve('我是第二个执行完成的')
+   
+     },5000)
+   
+   });
+   
+   Promise.race([p1,p2])
+   
+     .then(*res* => {
+   
+   ​    console.log(*res*)
+   
+   })
+   ```
+
+   
 
 3. reject  
 
    把Promise的状态置为rejected，这样我们在then中就能捕捉到，然后执行“失败”情况的回调。看下面的代码。
 
-   >  let p = new Promise((resolve, reject) => {
-   >       setTimeout(function(){
-   >             var num = Math.ceil(Math.random()*10); //生成1-10的随机数
-   >             if(num<=5){
-   >                 resolve(num);
-   >             } else {
-   >                 reject('数字太大了');
-   >             }
-   >       }, 2000);
-   >     }).then((data) => {
-   >             console.log('resolved',data);
-   >         },(err) => {
-   >             console.log('rejected',err);
-   >         }
-   >     ); 
+   ```
+    let p = new Promise((resolve, reject) => {
+         setTimeout(function(){
+               var num = Math.ceil(Math.random()*10); //生成1-10的随机数
+               if(num<=5){
+                   resolve(num);
+               } else {
+                   reject('数字太大了');
+               }
+         }, 2000);
+       }).then((data) => {
+               console.log('resolved',data);
+           },(err) => {
+               console.log('rejected',err);
+           }
+       ); 
+   ```
+
+   
 
    then方法可以接受两个参数，第一个对应resolve的回调，第二个对应reject的回调。所以我们能够分别拿到他们传过来的数据。
 
@@ -95,17 +105,21 @@ Promise 是一个对象，该对象上挂了很多方法，但是Promise中的�
 
    该方法也是来指定reject状态的回调函数的，效果和then方法参数中第二个回调一样，如果是reject状态，也会执行catch方法。不过，它还有另一个作用：如果在then方法发生了语法错误或抛出异常，Promise不会停止执行，而是会进入到catch方法，Promise后面的语句还是会继续执行，不会卡死。 
 
-   > Promise.resolve().then((data) => {    
-   >
-   > ​	console.log(abc); //此处的abc未定义
-   >
-   >  }) .catch((err) => {   
-   >
-   >  	console.log('rejected',err); 
-   >
-   > });
-   >
-   > Promise.reject().then(function(){},function(){ console.log('rejected')}).catch(err => { console.log('catch',err)})
+   ```javascript
+   Promise.resolve().then((data) => {    
+   
+   ​	console.log(abc); //此处的abc未定义
+   
+    }) .catch((err) => {   
+   
+    	console.log('rejected',err); 
+   
+   });
+   
+   Promise.reject().then(function(){},function(){ console.log('rejected')}).catch(err => { console.log('catch',err)})
+   ```
+
+   
 
 ### 手写Promise
 
@@ -122,58 +136,167 @@ Promise 是一个对象，该对象上挂了很多方法，但是Promise中的�
 
 那么，我们可以来尝试一下，手写一个初始版本：
 
-> class Promise {
->
->   *// 在new Promise的时候，我们需要传入resolve和reject两个函数，并且接收相应的参数*
->
->   constructor(*executor*) {
->
-> ​    this.state = 'pending'; *// 初始态*
->
-> ​    this.value = undefined; *// 成功的值*
->
-> ​    this.errorMsg = undefined; *// 回调失败的值*
->
-> ​    
->
-> ​    let resolve = (*value*) => { *// 定义resolve让executor函数调用，并且接收executor传入的值*
->
-> ​      *// 执行resolve 需要改变状态*
->
-> ​      if(this.state === 'pending') {
->
-> ​        this.state = 'fulfilled';
->
-> ​        this.value = *value*;
->
-> ​      }
->
-> ​    }
->
-> ​    let reject = (*msg*) => { *// 定义reject,传入executor函数调用*
->
-> ​      if(this.state === 'pending') {
->
-> ​        this.state = 'rejected';
->
-> ​        this.errorMsg = *msg*
->
-> ​      }
->
-> ​    }
->
-> ​    *// 在初始化时，就立即执行executor方法*
->
-> ​    try {
->
-> ​      executor(resolve,reject)
->
-> ​    } catch(error) {
->
-> ​      reject(error)
->
-> ​    }
->
->   }
->
-> }
+```
+class Promise {
+
+  *// 在new Promise的时候，我们需要传入resolve和reject两个函数，并且接收相应的参数*
+
+  constructor(*executor*) {
+
+​    this.state = 'pending'; *// 初始态*
+
+​    this.value = undefined; *// 成功的值*
+
+​    this.errorMsg = undefined; *// 回调失败的值*
+
+​    
+
+​    let resolve = (*value*) => { *// 定义resolve让executor函数调用，并且接收executor传入的值*
+
+​      *// 执行resolve 需要改变状态*
+
+​      if(this.state === 'pending') {
+
+​        this.state = 'fulfilled';
+
+​        this.value = *value*;
+
+​      }
+
+​    }
+
+​    let reject = (*msg*) => { *// 定义reject,传入executor函数调用*
+
+​      if(this.state === 'pending') {
+
+​        this.state = 'rejected';
+
+​        this.errorMsg = *msg*
+
+​      }
+
+​    }
+
+​    *// 在初始化时，就立即执行executor方法*
+
+​    try {
+
+​      executor(resolve,reject)
+
+​    } catch(error) {
+
+​      reject(error)
+
+​    }
+
+  }
+
+}
+```
+
+
+
+然后，Promise有一个then方法，这个方法接收两个函数类型的参数，这两个函数分别接收成功的值和失败的值。 
+
+```javascript
+*// 该方法接收两个函数作为参数*
+
+  then(*onFulFilled*,*onRejected*) {
+
+​    if(this.state === 'fulfilled') {
+
+​      onFulFilled(this.value);
+
+​    }
+
+​    if(this.state === 'rejected') {
+
+​      onRejected(this.errorMsg)
+
+​    }
+
+  }
+```
+
+
+
+现在可以解决同步代码的执行了，但是遇到异步调用的情况，then方法还不知道什么时候执行？我们想一下，在executor的函数中执行的异步操作，只有在constructor里面，才能知道什么时候去执行then中注册的成功和失败函数。那么现在就知道了什么时候去触发了？ 
+
+```
+constructor(*executor*) {
+
+​    this.state = 'pending'; *// 初始态*
+
+​    this.value = undefined; *// 成功的值*
+
+​    this.errorMsg = undefined; *// 回调的值*
+
+​    this.resolvedCallbacks = []; //存在异步成功回调函数
+
+​	this.
+
+​    let resolve = (*value*) => { *// 定义resolve让executor函数调用，并且接收executor传入的值*
+
+​      *// 执行resolve 需要改变状态*
+
+​      if(this.state === 'pending') {
+
+​        this.state = 'fulfilled';
+
+​        this.value = *value*;
+
+​		//执行异步成功回调
+
+​	
+
+​      }
+
+​    }
+
+​    let reject = (*msg*) => { *// 定义reject,传入executor函数调用*
+
+​      if(this.state === 'pending') {
+
+​        this.state = 'rejected';
+
+​        this.errorMsg = *msg*
+
+​      }
+
+​    }
+
+​    *// 在初始化时，就立即执行executor方法*
+
+​    try {
+
+​      executor(resolve,reject)
+
+​    } catch(error) {
+
+​      reject(error)
+
+​    }
+
+  }
+
+  *// 该方法接收两个函数作为参数*
+
+  then(*onFulFilled*,*onRejected*) {
+
+​    if(this.state === 'fulfilled') { // 同步的时候执行的回调
+
+​      onFulFilled(this.value);
+
+​    }
+
+​    if(this.state === 'rejected') {// 同步的时候执行的回调
+
+​      onRejected(this.errorMsg)
+
+​    }
+
+
+
+  }
+```
+
