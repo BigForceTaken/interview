@@ -44,7 +44,7 @@ Promise 是一个对象，该对象上挂了很多方法，但是Promise中的�
    该方法和all方法一样，接收一个Promise实例的数组作为参数，但是执行then的时机不同，实例中谁先执行完毕(fulfiled状态)，就以谁的返回参数来执行then方法。看下面的例子：
 
    ```
-   let p1 = new Promise((*resolve*,*reject*) => {
+   let p1 = new Promise((resolve,reject) => {
    
      setTimeout(() => {
    
@@ -66,7 +66,7 @@ Promise 是一个对象，该对象上挂了很多方法，但是Promise中的�
    
    Promise.race([p1,p2])
    
-     .then(*res* => {
+     .then(res => {
    
    ​    console.log(*res*)
    
@@ -139,45 +139,45 @@ Promise 是一个对象，该对象上挂了很多方法，但是Promise中的�
 ```
 class Promise {
 
-  *// 在new Promise的时候，我们需要传入resolve和reject两个函数，并且接收相应的参数*
+  // 在new Promise的时候，我们需要传入resolve和reject两个函数，并且接收相应的参数
 
-  constructor(*executor*) {
+  constructor(executor) {
 
-​    this.state = 'pending'; *// 初始态*
+​    this.state = 'pending'; // 初始态
 
-​    this.value = undefined; *// 成功的值*
+​    this.value = undefined; // 成功的值
 
-​    this.errorMsg = undefined; *// 回调失败的值*
+​    this.errorMsg = undefined; // 回调失败的值
 
 ​    
 
-​    let resolve = (*value*) => { *// 定义resolve让executor函数调用，并且接收executor传入的值*
+​    let resolve = (value) => { // 定义resolve让executor函数调用，并且接收executor传入的值
 
-​      *// 执行resolve 需要改变状态*
+​      // 执行resolve 需要改变状态
 
 ​      if(this.state === 'pending') {
 
 ​        this.state = 'fulfilled';
 
-​        this.value = *value*;
+​        this.value = value;
 
 ​      }
 
 ​    }
 
-​    let reject = (*msg*) => { *// 定义reject,传入executor函数调用*
+​    let reject = (msg) => { // 定义reject,传入executor函数调用
 
 ​      if(this.state === 'pending') {
 
 ​        this.state = 'rejected';
 
-​        this.errorMsg = *msg*
+​        this.errorMsg = msg
 
 ​      }
 
 ​    }
 
-​    *// 在初始化时，就立即执行executor方法*
+​    // 在初始化时，就立即执行executor方法
 
 ​    try {
 
@@ -199,9 +199,9 @@ class Promise {
 然后，Promise有一个then方法，这个方法接收两个函数类型的参数，这两个函数分别接收成功的值和失败的值。 
 
 ```javascript
-*// 该方法接收两个函数作为参数*
+// 该方法接收两个函数作为参数
 
-  then(*onFulFilled*,*onRejected*) {
+  then(onFulFilled,onRejected) {
 
 ​    if(this.state === 'fulfilled') {
 
@@ -223,80 +223,54 @@ class Promise {
 现在可以解决同步代码的执行了，但是遇到异步调用的情况，then方法还不知道什么时候执行？我们想一下，在executor的函数中执行的异步操作，只有在constructor里面，才能知道什么时候去执行then中注册的成功和失败函数。那么现在就知道了什么时候去触发了？ 
 
 ```
-constructor(*executor*) {
-
-​    this.state = 'pending'; *// 初始态*
-
-​    this.value = undefined; *// 成功的值*
-
-​    this.errorMsg = undefined; *// 回调的值*
-
-​    this.resolvedCallbacks = []; //存在异步成功回调函数
-
-​	this.
-
-​    let resolve = (*value*) => { *// 定义resolve让executor函数调用，并且接收executor传入的值*
-
-​      *// 执行resolve 需要改变状态*
-
-​      if(this.state === 'pending') {
-
-​        this.state = 'fulfilled';
-
-​        this.value = *value*;
-
-​		//执行异步成功回调
-
-​	
-
-​      }
-
-​    }
-
-​    let reject = (*msg*) => { *// 定义reject,传入executor函数调用*
-
-​      if(this.state === 'pending') {
-
-​        this.state = 'rejected';
-
-​        this.errorMsg = *msg*
-
-​      }
-
-​    }
-
-​    *// 在初始化时，就立即执行executor方法*
-
-​    try {
-
-​      executor(resolve,reject)
-
-​    } catch(error) {
-
-​      reject(error)
-
-​    }
-
-  }
-
-  *// 该方法接收两个函数作为参数*
-
-  then(*onFulFilled*,*onRejected*) {
-
-​    if(this.state === 'fulfilled') { // 同步的时候执行的回调
-
-​      onFulFilled(this.value);
-
-​    }
-
-​    if(this.state === 'rejected') {// 同步的时候执行的回调
-
-​      onRejected(this.errorMsg)
-
-​    }
-
-
-
-  }
+constructor(executor) {
+        this.state = 'pending'; // 初始态
+        this.value = undefined; // 成功的值
+        this.errorMsg = undefined; // 回调的值
+        this.onResolvedCallbacks = [];// 存放异步成功回调
+        this.onRejectedCallbacks = [];// 存放异步失败回调
+        let resolve = (value) => { // 定义resolve让executor函数调用，并且接收executor传入的值
+            // 执行resolve 需要改变状态
+            if(this.state === 'pending') {
+                this.state = 'fulfilled';
+                this.value = value;
+                this.onRejectedCallbacks.forEach(fn => {
+                    fn.call(this.value)
+                })
+            }
+        }
+        let reject = (msg) => { // 定义reject,传入executor函数调用
+            if(this.state === 'pending') {
+                this.state = 'rejected';
+                this.errorMsg = msg;
+                this.onRejectedCallbacks.forEach(fn => {
+                    fn.call(this.errorMsg)
+                })
+            }
+        }
+        // 在初始化时，就立即执行executor方法
+        try {
+            executor(resolve,reject)
+        } catch(error) {
+            reject(error)
+        }
+    }
+    // 该方法接收两个函数作为参数
+    then(onFulFilled,onRejected) {
+        if(this.state === 'fulfilled') {
+            onFulFilled(this.value);
+        }
+        if(this.state === 'rejected') {
+            onRejected(this.errorMsg)
+        }
+        if (this.state === 'pending') {// 注册失败/成功回调函数
+            this.onRejectedCallbacks.push((value) => {
+                onFulFilled(value)
+            })
+            this.onRejectedCallbacks.push((value) => {
+                onRejected(value)
+            })
+        }
+    }
 ```
 
