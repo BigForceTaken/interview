@@ -274,3 +274,4 @@ constructor(executor) {
     }
 ```
 
+Promise其它的其他方法就不一一的复写了。。。
