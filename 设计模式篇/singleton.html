@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .model{
+            border:1px solid black;
+            position: fixed;
+            width:300px;
+            height:300px;
+            top:20%;
+            left:50%;
+            margin-left:-150px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginBtn">登录</div>
+    <script>
+        // 单例模式的定义：保证一个类仅有一个实例，并提供一个访问它的全局访问点。实现的方法为先判断实例存
+        // 在与否，如果存在则直接返回，如果不存在就创建了再返回，这就确保了一个类只有一个实例对象。
+        var getSingle = function(fn){
+            let result;
+            return function () {
+                return result || (result = fn.apply(this,arguments))
+            }
+        }
+        // 我们创建一个登录浮窗的函数
+        var createLoginLayer = function(){
+            var div = document.createElement( 'div' );
+            div.innerHTML = '我是登录浮窗';
+            div.className = 'model'
+            div.style.display = 'none';
+            document.body.appendChild( div );
+            return div;
+        };
+        var createSingleLoginLayer = getSingle( createLoginLayer );
+        document.getElementById( 'loginBtn' ).onclick = function(){
+            var loginLayer = createSingleLoginLayer();
+            loginLayer.style.display = 'block';
+        };
+    </script>
+</body>
+</html>
