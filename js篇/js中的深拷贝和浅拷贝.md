@@ -4,7 +4,12 @@
 
 ###  一、 浅拷贝 
 
-浅拷贝，就是简单的利用 **=** 赋值操作符实现一个浅拷贝。
+浅拷贝，对源对象只是一个简单的copy，如果拷贝是对象，那么修改新对象的对象类型源对象也会改变。浅拷贝的几种方式：
+
+- 展开运算符...
+
+- Object.assign()
+- Array.prototype.slice()或Array.prototype.concat()
 
 ### 二、深拷贝 
 
@@ -30,10 +35,14 @@ console.log(cloneObj); // {name: "axuebin"}
 
 2. 利用递归来实现每一层都重新创建对象并赋值 
 
-递归的思想，就是对对象进行循环遍历，如果对象的属性值是引用值，那么继续递归循环，直到不是引用类型的为止。
+递归的思想，就是对对象进行循环遍历，如果对象的属性值是引用值，那么继续递归循环，直到不是引用类型的为止。利用递归就可以克隆出一个全新的对象，不管是函数还是其他类型都能克隆。
 
 ``` 
+
 function deepClone(originObj){
+	if(typeof originObj !== 'object' || originObj === null) {
+		return originObj;
+	}
 	let targetObj = Object.prototype.toString.call(originObj) === '[object Array]' ? [] : {};
 	for(let key in originObj) {
 		if(originObj.hasOwnProperty(key)){
@@ -50,40 +59,12 @@ function deepClone(originObj){
 }
 ```
 
- 
+3. jQuery.extend()
+4. lodash.cloneDeep()
 
 
 
-利用递归就可以克隆出一个全新的对象，不管是函数还是其他类型都能克隆。
-
-### 三、js中常用的拷贝 
 
 
 
-1. 数组拷贝 
 
-* concat()
-
-  该方法不会改变原数组，而是返回一个新的数组，但是只会对数组的第一层进行深拷贝。
-
-* slice()
-
-  也是对第一层进行深拷贝，效果同concat()
-
-2. 对象拷贝 
-
-   
-
-* Object.assign()
-
-  也是只拷贝第一层，如果对象的属性值指向的是引用地址，那么还是只拷贝地址
-
-* **...** 展开运算符，和Object.assign()一样
-
-### 总结 
-
-
-
-1. 常用的浅拷贝Object.assign()和...展开运算符，
-2. 深拷贝如果只对一般的简单对象(不含函数等)可以使用JSON.stringify()
-3. 如果有复杂的对象进行深拷贝，只能使用递归拷贝。
